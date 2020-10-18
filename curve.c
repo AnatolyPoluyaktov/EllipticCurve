@@ -67,6 +67,83 @@ void InitJacobiCurve(struct JacobiCurve* curve, struct param* param){
     BN_CTX_free(tmp);
   }
 
+void InitPoint(struct Point* point, char* X, char* Y, char* Z){
+    BN_dec2bn (&point->X, X);
+    BN_dec2bn (&point->Y, Y);
+    BN_dec2bn (&point->Z, Z);
+}
+void AdditionPoints(struct Point* P1, struct Point* P2, struct Point* P3, struct JacobiCurve* curve){
+    BN_CTX *tmp = BN_CTX_new();
+
+    BIGNUM* T1 = BN_new();
+    BN_copy(T1, P1->X);
+
+    BIGNUM* T2 = BN_new();
+    BN_copy(T2, P1->Y);
+
+    BIGNUM* T3 = BN_new();
+    BN_copy(T3, P1->Z);
+
+    BIGNUM* T4 = BN_new();
+    BN_copy(T4, P2->X);
+
+    BIGNUM* T5 = BN_new();
+    BN_copy(T5, P2->Y);
+
+    BIGNUM* T6 = BN_new();
+    BN_copy(T6, P2->Z);
+
+    BIGNUM* T7 = BN_new();
+    BIGNUM* T8 = BN_new();
+
+    //алгоритм сложения
+
+    BN_mod_mul (T7, T1, T3, curve->p, tmp);// T7 = X1 * Z1
+    BN_mod_add (T7, T2, T7, curve->p, tmp); // T7 = X1 * Z1 + Y1
+    BN_mod_mul (T8, T4, T6, curve->p, tmp); // T8 = X2 * Z2
+    BN_mod_add (T8, T5, T8, curve->p, tmp); // T8 = X2 * Z2 + Y2
+    BN_mod_mul (T2, T2, T5, curve->p, tmp); // T2 = Y1 * Y2
+    BN_mod_mul (T7, T7, T8, curve->p, tmp); // T7 = X3 + Y1 * Y2 + X1 * X2 * Z1 * Z2
+    BN_mod_sub (T7, T7, T2, curve->p, tmp); // T7 = X3 + X1 * X2 * Z1 * Z2
+    BN_mod_mul (T5, T1, T4, curve->p, tmp); // T5 = X1 * X2
+    BN_mod_add (T1, T1, T3, curve->p, tmp); // T1 = X1 + Z1
+    BN_mod_mul (T8, T3, T6, curve->p, tmp); // T8 = Z1 * Z2
+    BN_mod_add (T4, T4, T6, curve->p, tmp); // T4 = X2 + Z2
+    BN_mod_mul (T6, T5, T8, curve->p, tmp); // T6 = X1 * X2 * Z1 * Z2
+    BN_mod_sub (T7, T7, T6, curve->p, tmp); // T7 = X3
+    BN_mod_mul (T1, T1, T4, curve->p, tmp); // T1 = X1 * Z2 + X2 * Z1 + X1 * X2 + Z1 * Z2
+    BN_mod_sub (T1, T1, T5, curve->p, tmp); // T1 = X1 * Z2 + X2 * Z1 + Z1 * Z2
+    BN_mod_sub (T1, T1, T8, curve->p, tmp); // T1 = X1 * Z2 + X2 * Z1
+    BN_mod_sqr (T3, T1, curve->p, tmp);     // T3 = X1^2 * Z2^2+ X2^2 * Z1^2 + 2 * X1 * X2 * Z1 * Z2
+    BN_mod_add (T6, T6, T6, curve->p, tmp); // T6 = 2 * X1 * X2 * Z1 * Z2
+    BN_mod_sub (T3, T3, T6, curve->p, tmp); // T3 = X1^2 * Z2^2+ X2^2 * Z1^2
+    BN_mod_mul (T4, curve->e, T6, curve->p, tmp);// T4 = 2 * e * X1 * X2 * Z1 * Z2
+    BN_mod_mul (T3, T3, T4, curve->p, tmp); // T3 = 2 * e * X1 * X2 * Z1 * Z2 * (X1^2 * Z2^2+ X2^2 * Z1^2)
+    BN_mod_mul (T4, curve->d, T6, curve->p, tmp);// T4 = 2 * d * X1 * X2 * Z1 * Z2
+    BN_mod_sub (T2, T2, T4, curve->p, tmp); // T2 = Y1 * Y2 - 2 * d * X1 * X2 * Z1 * Z2
+    BN_mod_sqr (T4, T8, curve->p, tmp); // T4 = Z1^2 * Z2^2
+    BN_mod_sqr (T8, T5, curve->p, tmp);// T8 = X1^2 * X2^2
+    BN_mod_mul (T8, curve->e, T8, curve->p, tmp);// T8 = e * X1^2 * X2^2
+    BN_mod_add (T5, T4, T8, curve->p, tmp); // T5 = Z1^2 * Z2^2 + e * X1^2 * X2^2
+    BN_mod_mul (T2, T2, T5, curve->p, tmp); // T2 = (Z1^2 * Z2^2 + e * X1^2 * X2^2) * (Y1 * Y2 - 2 * d * X1 * X2 * Z1 * Z2)
+    BN_mod_add (T2, T2, T3, curve->p, tmp); // T2 = Y3
+    BN_mod_sub (T5, T4, T8, curve->p, tmp);// T5 = Z3
+    BN_copy (P3->X, T7);  // X3 = T7
+    BN_copy (P3->Y, T2); // Y3 = T2
+    BN_copy (P3->Z, T5); // Z3 = T5
+
+    BN_CTX_free(tmp);
+    BN_free (T1);
+    BN_free (T2);
+    BN_free (T3);
+    BN_free (T4);
+    BN_free (T5);
+    BN_free (T6);
+    BN_free (T7);
+    BN_free (T8);
+
+}
+
 
 
 void FreeParam(struct param* param){

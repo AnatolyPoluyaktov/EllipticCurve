@@ -37,7 +37,12 @@ struct JacobiCurve{
     BIGNUM* e;
     BIGNUM* d;
     BIGNUM* Z;
-   BIGNUM* p;
+    BIGNUM* p;
+};
+struct Point{
+    BIGNUM* X;
+    BIGNUM* Y;
+    BIGNUM* Z;
 };
 
 //инициализировать структуру с параметрами
@@ -45,7 +50,10 @@ void InitParam(struct param* param);
 
 // инициализировать параметры кривой
 void InitJacobiCurve(struct JacobiCurve* curve, struct param* param);
-
+// инициалзиция точки
+void InitPoint(struct Point* point, char* X, char* Y, char* Z);
+//реализация сложения двух точек
+void AdditionPoints(struct Point* P1, struct Point* P2, struct Point* P3 , struct JacobiCurve* curve);
 // очистка памяти
 void FreeParam(struct param* para);
 void FreeJacobiCurve(struct JacobiCurve* curve);
