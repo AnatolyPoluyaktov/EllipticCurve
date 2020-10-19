@@ -1,6 +1,7 @@
 #ifndef NULL
 #define NULL (void*)0
 #endif
+
 #ifndef CURVE_H
 #define CURVE_H
 #include <openssl/bn.h>
@@ -16,8 +17,6 @@
 // Значение, вычисленное на основе вышеперечисленных параметров с помощью Wolfram Mathematica
 #define theta_str           "454069018412434321972378083527459607666454479745512801572100703902391945898"
 
-// Значение для задания ограничения при генерировании произвольного числа
-#define max_rand_str        "1000000000000000000000000000000000000000000000000000000000000000000"
 
 
 
@@ -30,7 +29,7 @@ struct param{
     BIGNUM* q;
     BIGNUM* theta;
 };
-
+// структура для хранения параметров квадрики и порождающих элементов.
 struct JacobiCurve{
     BIGNUM* Y;
     BIGNUM* X;
@@ -39,6 +38,7 @@ struct JacobiCurve{
     BIGNUM* Z;
     BIGNUM* p;
 };
+// структура для хранения точек
 struct Point{
     BIGNUM* X;
     BIGNUM* Y;
@@ -50,12 +50,36 @@ void InitParam(struct param* param);
 
 // инициализировать параметры кривой
 void InitJacobiCurve(struct JacobiCurve* curve, struct param* param);
+
+
 // инициалзиция точки
 void InitPoint(struct Point* point, char* X, char* Y, char* Z);
+
 //реализация сложения двух точек
-void AdditionPoints(struct Point* P1, struct Point* P2, struct Point* P3 , struct JacobiCurve* curve);
+void AddPoints(struct Point* P1, struct Point* P2, struct Point* P3, struct JacobiCurve* curve);
+
+// вычисление кратной точки с помощью алгоритма "лесенка Монтгомери"
+void CalculateDegree(struct Point* kP, struct Point* P, struct JacobiCurve* curve, BIGNUM* degree);
+
+// перевод в аффинные координаты
+void CastPointToAffine(struct Point* affpoint, struct Point* P, struct JacobiCurve* curve);
+
+// вывод в аффинных координатах
+void PrintInAffin(struct Point* point, struct JacobiCurve* curve);
+
+// вывод в проективных
+void PrintProjective(struct Point* point);
+
+// проверка , что точка лежит на кривой
+int CheckPointIsOnCurve (struct Point* P, struct JacobiCurve* curve);
+
+// проверка, что точки равны
+int IsEqual(struct Point* P1, struct Point* P2, struct JacobiCurve* curve);
+
+void GetNegativePoint(struct Point *res, struct Point *point);
+
 // очистка памяти
 void FreeParam(struct param* para);
 void FreeJacobiCurve(struct JacobiCurve* curve);
-
+void FreePoint(struct Point* P);
 #endif // CURVE_H
