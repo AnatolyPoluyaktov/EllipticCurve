@@ -76,6 +76,7 @@ int CheckPointIsOnCurve (struct Point* P, struct JacobiCurve* curve);
 // проверка, что точки равны
 int IsEqual(struct Point* P1, struct Point* P2, struct JacobiCurve* curve);
 
+//получение обратной точки
 void GetNegativePoint(struct Point *res, struct Point *point);
 
 // очистка памяти
